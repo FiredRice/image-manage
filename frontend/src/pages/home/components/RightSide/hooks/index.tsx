@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useRefContext, useWatch } from '../../../hooks/context';
+import { AllLabelKey, useRefContext, useWatch } from '../../../hooks/context';
 import { imagesStore } from 'src/service/store';
 import { division } from 'src/utils';
 import { ImageFile } from 'src/pages/home/type';
 import { GetFilesInfo } from 'wailsjs/go/file/File';
-import { isEmpty, omit, remove } from 'lodash-es';
+import { isEmpty, omit, remove, uniq } from 'lodash-es';
 import { message } from 'antd';
 import EventManager from 'src/service/event';
 import { useSetGlobalLoading } from 'src/hooks';
@@ -59,25 +59,42 @@ export function useImagesEvents() {
     }
 
     const onImagesImported = useCallback(async (paths: string[]) => {
+        if (!paths?.length) return;
         setLoading(true);
+        const { currentLabel } = refInstance.getValues();
         const imageMap: any = {};
         if (isEmpty(paths)) return;
         paths.forEach(path => {
-            if (imagesStore.get(path)) return;
-            imageMap[path] = {
-                labels: [],
-            };
+            const image = imagesStore.get(path);
+            if (image && !!currentLabel && (currentLabel !== AllLabelKey)) {
+                const labels: string[] = image.labels || [];
+                labels.push(currentLabel);
+                imageMap[path] = {
+                    ...image,
+                    labels: uniq(labels)
+                };
+            } else {
+                const labels = !!currentLabel && (currentLabel !== AllLabelKey) ? [currentLabel] : [];
+                imageMap[path] = { labels };
+            }
         });
         if (isEmpty(imageMap)) return;
-        await imagesStore.setValues(imageMap);
-        paths = Object.keys(imageMap);
-        const fileInfos = await GetFilesInfo(paths);
+        const [, fileInfos] = await Promise.all([
+            imagesStore.setValues(imageMap),
+            GetFilesInfo(Object.keys(imageMap))
+        ]);
         const values: ImageFile[] = [...refInstance.getValues().images] || [];
-        paths.forEach((path, index) => {
+        values.forEach(v => {
+            if (imageMap[v.path]) {
+                v.labels = imageMap[v.path]?.labels || [];
+                Reflect.deleteProperty(imageMap, v.path);
+            }
+        });
+        Object.keys(imageMap).forEach((path, index) => {
             values.push({
                 ...omit(fileInfos[index], 'isDir'),
                 path,
-                labels: []
+                labels: imageMap[path]?.labels || []
             });
         });
         refInstance.setValues({ images: values });
