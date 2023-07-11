@@ -1,0 +1,125 @@
+.mg-l-5 {
+    margin-left: 5px;
+}
+
+.mg-r-5 {
+    margin-right: 5px;
+}
+
+.mg-b-5 {
+    margin-bottom: 5px;
+}
+
+.mg-t-5 {
+    margin-top: 5px;
+}
+
+.width-100-percent {
+    width: 100%;
+}
+
+.form-reset {
+	@media (max-width: 575px) {
+		@grid-columns: 24;
+
+		.ant-form-item {
+			flex-wrap: nowrap;
+		}
+
+		.ant-form-item-label {
+			white-space: nowrap !important;
+			text-align: right !important;
+			line-height: normal !important;
+			padding: 0 !important;
+			flex: none !important;
+
+			& > label::after {
+				display: block !important;
+			}
+		}
+
+		.loop-grid-columns(@index, @class) when (@index > 0) {
+			.ant-col@{class}-@{index} {
+				display: block !important;
+				flex: 0 0 percentage((@index / @grid-columns)) !important;
+				max-width: percentage((@index / @grid-columns)) !important;
+			}
+
+			.ant-col@{class}-push-@{index} {
+				left: percentage((@index / @grid-columns)) !important;
+			}
+
+			.ant-col@{class}-pull-@{index} {
+				right: percentage((@index / @grid-columns)) !important;
+			}
+
+			.ant-col@{class}-offset-@{index} {
+				margin-left: percentage((@index / @grid-columns)) !important;
+			}
+
+			.ant-col@{class}-order-@{index} {
+				order: @index !important;
+			}
+
+			.loop-grid-columns((@index - 1), @class);
+		}
+
+		.loop-grid-columns(@index, @class) when (@index =0) {
+			.ant-col@{class}-@{index} {
+				display: none !important;
+			}
+
+			.ant-col-push-@{index} {
+				left: auto !important;
+			}
+
+			.ant-col-pull-@{index} {
+				right: auto !important;
+			}
+
+			.ant-col@{class}-push-@{index} {
+				left: auto !important;
+			}
+
+			.ant-col@{class}-pull-@{index} {
+				right: auto !important;
+			}
+
+			.ant-col@{class}-offset-@{index} {
+				margin-left: 0 !important;
+			}
+
+			.ant-col@{class}-order-@{index} {
+				order: 0 !important;
+			}
+		}
+
+		.make-grid(@class: ~'') {
+			.loop-grid-columns(@grid-columns, @class);
+		}
+
+		.ant-col {
+			position: relative !important;
+			max-width: 100% !important;
+			min-height: 1px !important;
+		}
+
+		.make-grid();
+	}
+}
+
+.form-render-search {
+    .form-render-search-space {
+        width: 100%;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .ant-form-item {
+        margin: 0;
+    }
+
+    .form-render-search-space-block {
+        width: 100%;
+    }
+}
